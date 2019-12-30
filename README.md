@@ -17,6 +17,9 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
     - [Type annotation for function example](#type-annotation-for-function-example)
     - [Destructuring with annotation](#destructuring-with-annotation)
   - [IV. Objects](#iv-objects)
+  - [V. Arrays](#v-arrays)
+    - [Why annotation with arrays matters](#why-annotation-with-arrays-matters)
+  - [VI. Tuples](#vi-tuples)
 
 ## I. Types
 
@@ -365,3 +368,132 @@ const {
 } = profile;
 ```
 
+## V. Arrays
+
+Generally arrays in TS use only one data type per array...
+
+```js
+const carMakers = ['ford', 'toyota', 'chevy'];
+```
+
+Type inference shows `carMakers` is type `string[]` because we assigned values at instantiation... no need to annotate.
+
+We would want to annotate if we were not initializing the array.
+
+```js
+const carModels: string[] = [];
+```
+
+We can also put complex objects inside of arrays
+
+```js
+const dates = [new Date(), new Date()];
+```
+
+No annotation needed when array is initialized
+
+```js
+const carsByMake = [['f150'], ['corolla'], ['camaro']];
+```
+
+Annotation included since we are not initializing...
+
+```js
+const carByMake2: string[][] = [];
+```
+
+### Why annotation with arrays matters
+
+1. TS can do type inference when extracting values from an array
+2. TS can prevent us from adding incompatible values to the array
+3. We can get help with 'map', 'forEach', 'reduce' functions
+4. Flexible - arrays can still contain multiple different types
+
+```js
+// 1) Help with inference when extracting values
+const car = carMakers[0];
+const myCar = carMakers.pop();
+
+// 2) Prevent incompatible values
+carMakers.push(100);
+
+// 3) Help with 'map'
+carMakers.map((car: string): string => {
+  return car.toUpperCase(); // autocomplete on methods....
+});
+
+// 4) Flexible types
+const importantDates = [new Date(), '2019-10-01'];
+
+const importantDates2: (Date | string)[] = [new Date()];
+importantDates2.push('2020-01-01'); // accepts string
+importantDates2.push(new Date()); // accepts date
+importantDates2.push(100); // doesn't accept
+```
+
+Where to use types arrays?
+
+Any time we need to represent a collection of records with some arbitrary sort order.
+
+## VI. Tuples
+
+Tuple - Array-like structure where each element represents some property of a record.
+
+Whereas arrays can hold many different records or a collection of records...a tuple usually contains multiple different properties to describe one single thing.
+
+Usually inside of a tuple we will mix and match many different types of data.
+
+A tuple is an array where we put the values in a very specific order... It loses its labels (as in an object) but keeps the values.
+
+Here's an object representation of a drink.
+
+```js
+const drink = {
+  color: 'brown',
+  carbonated: true,
+  sugar: 40
+};
+```
+
+Without annotation TS infers it as an array with swappable values.
+
+```js
+const pepsi = ['brown', true, 40];
+// Wrong inference: pepsi: (string | boolean | number)[]
+```
+
+Annotation turns this into a tuple rather than array.
+
+```js
+// Tuple
+const pepsi: [string, boolean, number] = ['brown', true, 40];
+```
+
+To simplify we can also use a type alias. This eliminates having to annotate for each variable declaration.
+
+```js
+// Type alias defining a tuple
+type Drink = [string, boolean, number];
+```
+
+This creates a brand new type that we can use as a tuple. Now we can create many different drinks.
+
+```js
+// Tuple instances
+const cola: Drink = ['brown', true, 40];
+const sprite: Drink = ['clear', true, 40];
+const tea: Drink = ['brown', false, 0];
+```
+
+Why use them? Perhaps when processing a CSV file to represent a single row...
+
+```js
+// Here's a tuple
+const carSpecs: [number, number] = [400, 3354];
+
+// But objects may be better suited bc the key describes the data...
+const carStats = {
+  horsepower: 400,
+  weight: 3354
+};
+```
