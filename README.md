@@ -26,6 +26,11 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
   - [VIII. Classes](#viii-classes)
     - [Fields](#fields)
     - [Methods](#methods)
+  - [IX. Type Guards](#ix-type-guards)
+  - [X. Abstract Classes](#x-abstract-classes)
+  - [XI. Enums](#xi-enums)
+  - [XII. Generics](#xii-generics)
+    - [Function argument comparison](#function-argument-comparison)
 
 ## I. Types
 
@@ -757,3 +762,267 @@ car.startDrivingProcess(); // screech beep
 ```
 
 We do not use `public` keyword for `color` bc we are not creating a new `color` field for `Car`. We are referencing `color` in `Vehicle`.
+
+## IX. Type Guards
+
+Type guards allow methods on a type to become available.
+
+Without type guards, only the methods in common for the union would be usable.
+
+- Primitive types (number, string, boolean, symbol) uses `typeof`
+- Every other type uses `instanceof`
+
+```js
+class Sorter {
+    constructor(public collection: number[] | string) {}
+  
+    sort(): void {
+      const { length } = this.collection;
+  
+      for (let i = 0; i < length; i++) {
+        for (let j = 0; j < length - i - 1; j++) {
+  
+          // All of this only work if collection is number[]
+          // If collection is an array of numbers
+          if (this.collection instanceof Array) { // type guard
+            if (this.collection[j] > this.collection[j + 1]) {
+              const leftHand = this.collection[j];
+              this.collection[j] = this.collection[j + 1];
+              this.collection[j + 1] = leftHand;
+            }
+          }
+  
+          // Only going to work if collection is a string
+          // If collection is a string
+          if (typeof this.collection === 'string') { //type guard
+            
+          }
+        }
+      }
+    }
+  }
+  
+  const sorter = new Sorter([10, 3, -5, 0, -10, 2]);
+  sorter.sort();
+  
+  console.log(sorter.collection);
+```
+
+## X. Abstract Classes
+
+Abstract classes cannot be instantiated directly but serve as a model from which to base other classes from.
+
+They allow you to specify abstract properties and methods that must exist in the child class.
+
+```js
+
+export abstract class Sorter {
+  abstract length: number;
+  abstract compare(leftIndex: number, rightIndex: number): boolean;
+  abstract swap(leftIndex: number, rightIndex: number): void;
+
+  sort(): void {
+    const { length } = this; // destructure
+
+    for (let i = 0; i < length; i++) {
+      for (let j = 0; j < length - i - 1; j++) {
+        if (this.compare(j, j + 1)) {
+          this.swap(j, j + 1);
+        }
+      }
+    }
+  }
+}
+```
+
+`length`, `compare`, and `swap` must all be implemented in child classes.
+
+The `NumbersCollection` classes inherits from `Sorter`.
+
+```js
+export class NumbersCollection extends Sorter {
+  constructor(public data: number[]) {
+    super();
+  }
+
+  // adding 'get' makes length become a property
+  get length(): number {
+    return this.data.length;
+  }
+
+  compare(leftIndex: number, rightIndex: number): boolean {
+    return this.data[leftIndex] > this.data[rightIndex];
+  }
+
+  swap(leftIndex: number, rightIndex: number): void {
+    const leftData = this.data[leftIndex];
+    this.data[leftIndex] = this.data[rightIndex];
+    this.data[rightIndex] = leftData;
+  }
+}
+```
+
+The `CharactersCollection` also inherits from `Sorter`.
+
+```js
+export class CharactersCollection extends Sorter {
+  constructor(public data: string) {
+    super();
+  }
+
+  get length(): number {
+    return this.data.length;
+  }
+
+  compare(leftIndex: number, rightIndex: number): boolean {
+    return (
+      this.data[leftIndex].toLowerCase() > this.data[rightIndex].toLowerCase()
+    );
+  }
+
+  swap(leftIndex: number, rightIndex: number): void {
+    const characters = this.data.split('');
+
+    const leftData = characters[leftIndex];
+    characters[leftIndex] = characters[rightIndex];
+    characters[rightIndex] = leftData;
+
+    this.data = characters.join('');
+  }
+}
+```
+
+## XI. Enums
+
+Enum is an object that stores some closely related values.
+
+Use enum to signal to other developers that these are a set of closely related objects.
+
+```js
+enum MatchResults {
+  HomeWin = 'H',
+  AwayWin = 'A',
+  Draw = 'D'
+}
+```
+
+Use whenever we have a small fixed set of values that are all closely related and known at compile time.
+
+## XII. Generics
+
+- Like function arguments, but for types in class and function definitions
+- Allows us to define the type of a property/argument/return value at a future point in time
+- Used heavily when writing reusable code
+
+### Function argument comparison
+
+Instead of creating hard-coded `addOne` and `addTwo` functions...
+
+```js
+// Hard-code add
+const addOne = (a: number): number => {
+  return a + 1;
+};
+
+const addTwo = (a: number): number => {
+  return a + 2;
+};
+```
+
+We can create a dynamic `add` function by passing in a second argument.
+
+```js
+// Dynamic add
+const add = (a: number, b: number): number => {
+  return a + b;
+};
+
+add(10, 1);
+add(10, 2);
+add(10, 3);
+```
+
+In the same way we can create a function argument to create a dynamic `add` function, we can create dynamic type arguments to a function/class definition. This allows us define the type at a later point.
+
+Here is a class example...
+
+```js
+class HoldNumber {
+  data: number;
+}
+class HoldString {
+  data: string;
+}
+
+const holdNumber = new HoldNumber();
+holdNumber.data = 123;
+
+const holdString = new HoldString();
+holdString.data = 'abc';
+```
+
+This is a silly way of structuring code. We would never create duplicate class definitions and just sub out one property...
+
+So rather than defining separate classes we can just use a Generic.
+
+- A generic is going to customize the definition of this class in the exact same way that the `b` argument in the previous function customized the body of the function.
+- Instead we write a single class that does what both the previous classes were doing but it allows us to customize the types on the fly.
+
+```js
+class HoldAnything<TypeOfData> {
+  data: TypeOfData;
+}
+```
+
+Notice we supply a type as an argument to the class in the angle brackets.
+
+Now when we create an instance of `HoldAnything`, we can pass in an  argument for `TypeOfData`.
+
+Remember, when we call a function we have to pass in a value for each argument... In the same way, when we define a generic, we have to pass in a type for the generic value `TypeOfData`.
+
+```js
+const holdNumber = new HoldAnything<number>();
+holdNumber.data = 123;
+
+const holdString = new HoldAnything<string>();
+holdString.data = 'abc';
+
+const holdDate = new HoldAnything<Date>();
+holdDate.data = new Date('2019/12/28');
+```
+
+When we work with generics, view it exactly like we are working with a function argument.
+
+By convention, rather than giving a generic a long name such as `<TypeOfData>` we use a single letter like `<T>` which refers to a generic type:
+
+```js
+class HoldAnything<T> {
+  data: T;
+
+  add(a: T): T {
+    return a;
+  }
+}
+```
+
+Here is a full example that uses an abstract class and generics.
+
+```js
+export abstract class CsvFileReader<T> {
+  data: T[] = [];
+
+  constructor(public filename: string) {}
+
+  abstract mapRow(row: string[]): T;
+
+  read(): void {
+    this.data = fs
+      .readFileSync(this.filename, {
+        encoding: 'utf-8'
+      })
+      .split('\n')
+      .map((row: string): string[] => row.split(','))
+      .map(this.mapRow);
+  }
+}
+```
