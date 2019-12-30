@@ -23,6 +23,9 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
   - [VII. Interfaces](#vii-interfaces)
     - [Interface Rules](#interface-rules)
     - [General Strategy fro Code Reuse in TypeScript](#general-strategy-fro-code-reuse-in-typescript)
+  - [VIII. Classes](#viii-classes)
+    - [Fields](#fields)
+    - [Methods](#methods)
 
 ## I. Types
 
@@ -660,3 +663,97 @@ Rest of the course will focus on defining different interfaces to restrict acces
 1. The goal of an interface is to define a new type.
 2. TS iterates thru all the properties of an interface to make sure the object has the same properties with the same type.
 
+## VIII. Classes
+
+Classes are a blueprint to create an object with some fields (values) and methods (functions) to represent a 'thing'.
+
+In TS we can use modifiers...
+
+The goal of modifiers is to restrict access to different functions or different variables
+
+- `public` - This method can be called any where, any time
+- `private` - This method can only be called by other methods in this class
+- `protected` - This method can be called by other methods in this class, or by other methods in child classes
+
+When we create classes we can add modifiers
+
+- Step 1 - Fields (values)
+- Step 2 - Methods (functions)
+
+### Fields
+
+Fields - either we initialize a property on the same line...
+
+```js
+class Vehicle {
+  color: string = 'red'; // initialize property on same line
+}
+```
+
+or we initialize in the constructor...
+
+```js
+class Vehicle {
+  color: string;
+
+  constructor(color: string) {
+    this.color = color; // initialize property in constructor
+  }
+}
+```
+
+Here's a shorthand for creating public fields that can be initialized in the constructor.
+
+```js
+class Vehicle {
+  constructor(public color: string) {}
+}
+```
+
+### Methods
+
+Next we can add methods.
+
+```js
+class Vehicle {
+  constructor(public color: string) {}
+
+  protected honk(): void {
+    console.log('beep');
+  }
+}
+```
+
+We don't actually call methods on the class directly. Usually we create an instance with the `new` keyword and call methods off of that object.
+
+```js
+const vehicle = new Vehicle('orange');
+
+console.log(vehicle.color);
+
+vehicle.honk();
+```
+
+Next we create a `Car` class.
+
+```js
+class Car extends Vehicle {
+  constructor(public wheels: number, color: string) {
+    super(color);
+  }
+
+  private drive(): void {
+    console.log('screech');
+  }
+
+  startDrivingProcess(): void {
+    this.drive();
+    this.honk();
+  }
+}
+
+const car = new Car(4, 'red');
+car.startDrivingProcess(); // screech beep
+```
+
+We do not use `public` keyword for `color` bc we are not creating a new `color` field for `Car`. We are referencing `color` in `Vehicle`.
