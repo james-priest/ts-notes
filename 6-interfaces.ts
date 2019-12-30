@@ -123,7 +123,7 @@ printSummary(drink2);
 
 // someFunction() implements interface XYZ.
 // XYZ is a gatekeeper to someFunction().
-// Object1 and Object2 must satisfy the XYZ interface to work with somFunction().
+// Object1 and Object2 must satisfy the XYZ interface to work with someFunction().
 
 // Rest of the course will focus on defining different interfaces to
 //  restrict access to different functions...
