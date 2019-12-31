@@ -35,6 +35,10 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
     - [Inheritance](#inheritance)
     - [Composition](#composition)
     - [Composition Example](#composition-example)
+  - [XIV. Advanced Generics](#xiv-advanced-generics)
+    - [Example of generics with classes](#example-of-generics-with-classes)
+    - [Example of generics with functions](#example-of-generics-with-functions)
+    - [Generic Constraints](#generic-constraints)
 
 ## I. Types
 
@@ -1059,7 +1063,7 @@ export type MatchDataTuple = [
 ];
 
 export interface Analyzer {
-  run(matches: MatchData[]): string;
+  run(matches: MatchDataTuple[]): string;
 }
 
 export interface OutputTarget {
@@ -1105,6 +1109,17 @@ export class WinsAnalysis implements Analyzer {
 ```
 
 ```js
+// ConsoleReport.ts
+import { OutputTarget } from '../Summary';
+
+export class ConsoleReport implements OutputTarget {
+  print(report: string): void {
+    console.log(report);
+  }
+}
+```
+
+```js
 // index.ts
 import { MatchReader } from './MatchReader';
 import { CsvFileReader } from './CsvFileReader';
@@ -1126,4 +1141,140 @@ const summary = new Summary(
 );
 
 summary.buildAndPrintReport(matchReader.matches);
+```
+
+## XIV. Advanced Generics
+
+### Example of generics with classes
+
+```js
+// Hard coded classes
+class ArrayOfNumbers {
+  constructor(public collection: number[]) { }
+  
+  get(index: number): number {
+    return this.collection[index]
+  }
+}
+
+class ArrayOfStrings {
+  constructor(public collection: string[]) { }
+  
+  get(index: number): string {
+    return this.collection[index]
+  }
+}
+```
+
+Instead of creating separate classes we can create a single class with a generic.
+
+```js
+// Dynamic class
+class ArrayOfAnything<T> {
+  constructor(public collection: T[]) { }
+  
+  get(index: number): T {
+    return this.collection[index];
+  }
+}
+
+// type inference around generics shows... 
+//   arr: ArrayOfAnything<string>
+const arr = new ArrayOfAnything(['a', 'b', 'c']);
+
+// explicit type definition
+const arr = new ArrayOfAnything<string>(['a', 'b', 'c']);
+```
+
+We still should make a point of explicitly setting type definitions in order to catch errors.
+
+### Example of generics with functions
+
+```js
+// hard-coded functions
+function printString(arr: string[]): void {
+  for (let i = 0; i < arr.length; i++) {
+    console.log('arr[i]', arr[i])
+  }
+}
+
+function printNumbers(arr: number[]): void {
+  for (let i = 0; i < arr.length; i++) {
+    console.log('arr[i]', arr[i])
+  }
+}
+```
+
+Instead we create one new function that can receive any type of array
+
+```js
+function printAnything<T>(arr: T[]): void {
+  for (let i = 0; i < arr.length; i++) {
+    console.log('arr[i]', arr[i])
+  }
+}
+
+// explicit type definition
+printAnything<string>(['a', 'b', 'c']);
+
+// not <string[]>... that is two-dimensional array
+```
+
+We could also leave off the generic type and rely on type inference
+
+```js
+//  type inference would resolve this as:
+//  printAnything<string>(arr: string[]): void
+printAnything(['a', 'b', 'c']);
+```
+
+Instead, it is recommended to always use explicit type definitions in order to catch errors like this...
+
+```js
+printAnything<string>([1, 2, 3]); // type number not assignable to type string
+```
+
+### Generic Constraints
+
+```js
+class Car {
+  print() {
+    console.log('I am a car');
+  }
+}
+
+class House {
+  print() {
+    console.log('I am a house')
+  }
+}
+
+// here we have an error until we add a constraint to type T
+function printHousesOrCars<T>(arr: T[]): void {
+  for (let i = 0; i < arr.length; i++) {
+    arr[i].print(); // Error
+  }
+}
+```
+
+The fix involves creating an interface that we can use to extend the generic with.
+
+```js
+// Fix
+interface Printable {
+  print(): void;
+}
+
+// now we use extends keyword
+function printHousesOrCars<T extends Printable>(arr: T[]): void {
+  for (let i = 0; i < arr.length; i++) {
+    arr[i].print(); // No error
+  }
+}
+
+printHousesOrCars([1, 2, 3]); // error
+
+printHousesOrCars<House>([new House(), new House()]); // Good
+printHousesOrCars<Car>([new Car(), new Car()]); // Good
+printHousesOrCars<House | Car>([new House(), new Car()]); // Good
 ```
