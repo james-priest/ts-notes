@@ -31,6 +31,10 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
   - [XI. Enums](#xi-enums)
   - [XII. Generics](#xii-generics)
     - [Function argument comparison](#function-argument-comparison)
+  - [XIII. Inheritance vs Composition](#xiii-inheritance-vs-composition)
+    - [Inheritance](#inheritance)
+    - [Composition](#composition)
+    - [Composition Example](#composition-example)
 
 ## I. Types
 
@@ -1025,4 +1029,101 @@ export abstract class CsvFileReader<T> {
       .map(this.mapRow);
   }
 }
+```
+
+## XIII. Inheritance vs Composition
+
+### Inheritance
+
+Inheritance uses abstract methods and properties inside of abstract classes to specify what methods and properties must be created in child classes.
+
+This allows us to specify some core functionality that is then inherited by all child classes.
+
+### Composition
+
+Composition allows us to specify a property that is defined by an interface which then all objects being assigned to that property must conform to.
+
+- Inheritance - Characterized by an **is a** relationship between two classes.
+- Composition - Characterized by a **has a** relationship between two classes.
+
+In composition we can give an object a reference to another object in order to create the most amount of flexibility. The main object can then delegate behavior to the second object.
+
+### Composition Example
+
+```js
+// Summary.ts
+export type MatchDataTuple = [
+  Date,
+  string,
+  number,
+];
+
+export interface Analyzer {
+  run(matches: MatchData[]): string;
+}
+
+export interface OutputTarget {
+  print(report: string): void;
+}
+
+export class Summary {
+  constructor(public analyzer: Analyzer, public outputTarget: OutputTarget) {}
+
+  buildAndPrintReport(matches: MatchDataTuple[]): void {
+    const output = this.analyzer.run(matches);
+    this.outputTarget.print(output);
+  }
+}
+
+// Usage will be like...
+// new Summary(new WinsAnalysis(), new ConsoleReport());
+```
+
+```js
+// WinsAnalysis.ts
+import { Analyzer } from '../Summary';
+import { MatchDataTuple } from '../Summary';
+import { MatchResult } from '../MatchResult';
+
+export class WinsAnalysis implements Analyzer {
+  constructor(public team: string) {}
+
+  run(matches: MatchDataTuple[]): string {
+    let wins = 0;
+
+    for (const match of matches) {
+      if (match[1] === this.team && match[5] === MatchResult.HomeWin) {
+        wins++;
+      } else if (match[2] === this.team && match[5] === MatchResult.AwayWin) {
+        wins++;
+      }
+    }
+
+    return `Team ${this.team} has won ${wins} games`;
+  }
+}
+```
+
+```js
+// index.ts
+import { MatchReader } from './MatchReader';
+import { CsvFileReader } from './CsvFileReader';
+import { WinsAnalysis } from './analyzers/WinsAnalysis';
+import { ConsoleReport } from './reportTargets/ConsoleReport';
+import { Summary } from './Summary';
+
+// 1. Create an object that satisfies the 'DataReader' interface
+const csvFileReader = new CsvFileReader('football.csv');
+
+// 2. Create an instance of MatchReader and pass in something
+//    satisfying the 'DataReader' interface
+const matchReader = new MatchReader(csvFileReader);
+matchReader.load();
+
+const summary = new Summary(
+  new WinsAnalysis('Man United'),
+  new ConsoleReport()
+);
+
+summary.buildAndPrintReport(matchReader.matches);
 ```
