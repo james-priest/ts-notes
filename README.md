@@ -39,6 +39,10 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
     - [Example of generics with classes](#example-of-generics-with-classes)
     - [Example of generics with functions](#example-of-generics-with-functions)
     - [Generic Constraints](#generic-constraints)
+  - [Appendix](#appendix)
+    - [a) Fix TypeError undefined for getter &amp; setter (ambiguous this)](#a-fix-typeerror-undefined-for-getter-amp-setter-ambiguous-this)
+      - [Reminder of this](#reminder-of-this)
+      - [Fix with a bound function (arrow function)](#fix-with-a-bound-function-arrow-function)
 
 ## I. Types
 
@@ -1278,3 +1282,69 @@ printHousesOrCars<House>([new House(), new House()]); // Good
 printHousesOrCars<Car>([new Car(), new Car()]); // Good
 printHousesOrCars<House | Car>([new House(), new Car()]); // Good
 ```
+
+## Appendix
+
+### a) Fix TypeError undefined for getter & setter (ambiguous `this`)
+
+If a getter or setter is used as a pass-through method then `this` on the destination method will refer to the pass through object and not the destination object.
+
+#### Reminder of `this`
+
+`this` refers to whatever is to the left of the method call.
+
+```js
+// Reminder on how 'this' works in javascript
+const colors = {
+  color: 'red',
+  printColor(): void {
+    console.log(this.color);
+  }
+};
+
+// 'this' is what ever is to the left of the method call
+colors.printColor(); // "red"
+
+const { printColor } = colors;
+printColor(); // TypeError: Cannot read property 'color' of undefined
+```
+
+#### Fix with a bound function (arrow function)
+
+The destination object must use an arrow function for its getters and setters.
+
+```js
+// normal getter/setter shorthand will not work with pass-through
+ export class Attributes<T> {
+  constructor(private data: T) {}
+
+  // generic constraint; K can only ever be a key of T
+  get<K extends keyof T>(key: K): T[K] {
+    return this.data[key];
+  }
+
+  set(update: T): void {
+    Object.assign(this.data, update);
+  }
+}
+```
+
+The fix uses an arrow function.
+
+```js
+// put equal after get/set and an arrow before brackets
+export class Attributes<T> {
+  constructor(private data: T) {}
+
+  // generic constraint; K can only ever be a key of T
+  get = <K extends keyof T>(key: K): T[K] => {
+    return this.data[key];
+  };
+
+  set = (update: T): void => {
+    Object.assign(this.data, update);
+  }
+}
+```
+
+In fact, we should ALWAYS use arrow functions 100% of th time with getters and setters so that we never have an ambiguous `this`.
