@@ -43,6 +43,10 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
     - [a) Fix TypeError undefined for getter &amp; setter (ambiguous this)](#a-fix-typeerror-undefined-for-getter-amp-setter-ambiguous-this)
       - [Reminder of this](#reminder-of-this)
       - [Fix with a bound function (arrow function)](#fix-with-a-bound-function-arrow-function)
+    - [b) How to extend a type definition](#b-how-to-extend-a-type-definition)
+    - [<ol start="3">
+<li>How to add a type guard</li>
+</ol>](#ol-start%223%22-lihow-to-add-a-type-guardli-ol)
 
 ## I. Types
 
@@ -1347,4 +1351,50 @@ export class Attributes<T> {
 }
 ```
 
-In fact, we should ALWAYS use arrow functions 100% of th time with getters and setters so that we never have an ambiguous `this`.
+In fact, we should ALWAYS use arrow functions 100% of the time with getters and setters so that we never have an ambiguous `this`.
+
+### b) How to extend a type definition
+
+This can be done to extend poorly typed defs.
+
+```js
+import { Router, Request, Response } from 'express';
+
+interface RequestWithBody extends Request {
+  body: { [key: string]: string | undefined };
+}
+
+router.post('/login', (req: RequestWithBody, res: Response) => {
+  const { email, password } = req.body;
+  let resBody = '<div>You must provide an email</div>';
+
+  if (email) {
+    resBody = `
+      <div>email: ${email.toLocaleUpperCase()}</div>
+      <div>password: ${password}</div>
+    `;
+  }
+
+  res.send(resBody);
+});
+```
+
+### 3) How to add a type guard
+
+This is necessary to avoid "Object is possibly undefined".
+
+```js
+// Replace this
+router.get('/', (req: Request, res: Response) => {
+  if (req.session.loggedIn) {
+    // TS marks as error bcz session may be undefined
+  }
+});
+
+// with type guard
+router.get('/', (req: Request, res: Response) => {
+  if (req.session && req.session.loggedIn) {
+    // this now tests if req.session exists
+  }
+});
+```
