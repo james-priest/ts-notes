@@ -44,9 +44,7 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
       - [Reminder of this](#reminder-of-this)
       - [Fix with a bound function (arrow function)](#fix-with-a-bound-function-arrow-function)
     - [b) How to extend a type definition](#b-how-to-extend-a-type-definition)
-    - [<ol start="3">
-<li>How to add a type guard</li>
-</ol>](#ol-start%223%22-lihow-to-add-a-type-guardli-ol)
+    - [c) How to add a type guard](#c-how-to-add-a-type-guard)
 
 ## I. Types
 
@@ -1379,7 +1377,7 @@ router.post('/login', (req: RequestWithBody, res: Response) => {
 });
 ```
 
-### 3) How to add a type guard
+### c) How to add a type guard
 
 This is necessary to avoid "Object is possibly undefined".
 
