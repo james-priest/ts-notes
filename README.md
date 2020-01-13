@@ -39,16 +39,24 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
     - [Example of generics with classes](#example-of-generics-with-classes)
     - [Example of generics with functions](#example-of-generics-with-functions)
     - [Generic Constraints](#generic-constraints)
+  - [XV. Decorators](#xv-decorators)
+    - [Decorators on a property, method, or accessor](#decorators-on-a-property-method-or-accessor)
+    - [Property descriptor](#property-descriptor)
+      - [Property Descriptor for Methods](#property-descriptor-for-methods)
+    - [Decorator Factory](#decorator-factory)
+    - [Decorators around Properties](#decorators-around-properties)
+    - [Parameter Decorators](#parameter-decorators)
+    - [Class Decorator](#class-decorator)
   - [Appendix](#appendix)
-    - [a) Fix TypeError undefined for getter &amp; setter (ambiguous this)](#a-fix-typeerror-undefined-for-getter-amp-setter-ambiguous-this)
+    - [A. Fix TypeError undefined for getter &amp; setter (ambiguous this)](#a-fix-typeerror-undefined-for-getter-amp-setter-ambiguous-this)
       - [Reminder of this](#reminder-of-this)
       - [Fix with a bound function (arrow function)](#fix-with-a-bound-function-arrow-function)
-    - [b) How to extend a type definition](#b-how-to-extend-a-type-definition)
-    - [c) How to add a type guard](#c-how-to-add-a-type-guard)
+    - [B. How to extend a type definition](#b-how-to-extend-a-type-definition)
+    - [C. How to add a type guard](#c-how-to-add-a-type-guard)
 
 ## I. Types
 
-```js
+```ts
 const today = new Date();
 today.getMonth();
 
@@ -66,7 +74,7 @@ const red = new Color();
 
 These are all type annotations but none are needed...
 
-```js
+```ts
 let apples: number = 5;
 let speed: string = 'fast';
 let hasName: boolean = true;
@@ -77,7 +85,7 @@ let nothing: undefined = undefined;
 
 ### Built-in Objects
 
-```js
+```ts
 // built in objects
 let now: Date = new Date();
 
@@ -108,7 +116,7 @@ const logNumber: (i: number) => void = (i: number) => {
 
 If declaration and initialization are on the same line, TypeScript will figure out the type for us.
 
-```js
+```ts
 let oranges = 5;
 let distance = 'far';
 let hasAge = true;
@@ -132,7 +140,7 @@ AVOID VARIABLES WITH `any` AT ALL COSTS!
 
 Without annotation:
 
-```js
+```ts
 const json = '{"x": 10, "y": 20}';
 
 const coordinates = JSON.parse(json);
@@ -141,7 +149,7 @@ console.log(coordinates); // {x: 10, y: 20 };
 
 Fix:
 
-```js
+```ts
 const json = '{"x": 10, "y": 20}';
 
 const coordinates: { x: number; y: number } = JSON.parse(json);
@@ -152,7 +160,7 @@ console.log(coordinates); // {x: 10, y: 20 };
 
 Without annotation:
 
-```js
+```ts
 let words = ['red', 'green', 'blue'];
 
 let foundWord;
@@ -166,7 +174,7 @@ for (let word of words) {
 
 Fix:
 
-```js
+```ts
 let words = ['red', 'green', 'blue'];
 
 let foundWord: boolean;
@@ -182,7 +190,7 @@ for (let word of words) {
 
 Without annotation:
 
-```js
+```ts
 let numbers = [-10, -1, 12];
 
 let numberAboveZero = false;
@@ -196,7 +204,7 @@ for (let number of numbers) {
 
 Fix:
 
-```js
+```ts
 let numbers = [-10, -1, 12];
 
 let numberAboveZero: boolean | number = false;
@@ -226,7 +234,7 @@ Code we add to tell TypeScript:
 
 Arrow function without annotation:
 
-```js
+```ts
 const add1 = (a, b) => {
   return a + b;
 };
@@ -234,7 +242,7 @@ const add1 = (a, b) => {
 
 Fix:
 
-```js
+```ts
 const add = (a: number, b: number): number => {
   return a + b;
 };
@@ -248,7 +256,7 @@ This is why...
 
 forgetting to return the result means TS infers a `void` return type and we lose TypeScript's ability to catch the syntax error.
 
-```js
+```ts
 // named function
 const subtract = (a: number, b: number) => {
   a - b;
@@ -288,7 +296,7 @@ const throwError3 = (message: string): void => {
 
 ### Destructuring with annotation
 
-```js
+```ts
 // define weather object...
 const todaysWeather = {
   date: new Date(),
@@ -318,7 +326,7 @@ Destructuring with annotation
   - We did not try to annotate the destructured properties.
   - The destructuring and annotations are always going to be separated by colon (:)
 
-```js
+```ts
 const logWeather3 = ({
   date,
   weather
@@ -335,7 +343,7 @@ const logWeather3 = ({
 
 Here is an object literal.
 
-```js
+```ts
 const profile = {
   firstName: 'alex',
   age: 20,
@@ -353,7 +361,7 @@ Notice that rather than setting a function equal to a property, we are using ES2
 
 Now we can reference a property.
 
-```js
+```ts
 // ES5
 const age = profile.age;
 
@@ -363,7 +371,7 @@ const { age } = profile;
 
 If we need to annotate because of one of the three reasons then we need to annotate the structure of the whole property and not just the value...
 
-```js
+```ts
 // wrong!
 const { age }: number = profile;
 
@@ -373,19 +381,19 @@ const { age }: { age: number } = profile;
 
 Destructuring multiple properties:
 
-```js
+```ts
 const { age, firstName }: { age: number; firstName: string } = profile;
 ```
 
 ES2015 object destructuring - no annotation:
 
-```js
+```ts
 const { coords: { lat, lng } } = profile;
 ```
 
 ES2015 object destructuring with annotation:
 
-```js
+```ts
 const {
   coords: { lat, lng }
 }: {
@@ -397,7 +405,7 @@ const {
 
 Generally arrays in TS use only one data type per array...
 
-```js
+```ts
 const carMakers = ['ford', 'toyota', 'chevy'];
 ```
 
@@ -405,25 +413,25 @@ Type inference shows `carMakers` is type `string[]` because we assigned values a
 
 We would want to annotate if we were not initializing the array.
 
-```js
+```ts
 const carModels: string[] = [];
 ```
 
 We can also put complex objects inside of arrays
 
-```js
+```ts
 const dates = [new Date(), new Date()];
 ```
 
 No annotation needed when array is initialized
 
-```js
+```ts
 const carsByMake = [['f150'], ['corolla'], ['camaro']];
 ```
 
 Annotation included since we are not initializing...
 
-```js
+```ts
 const carByMake2: string[][] = [];
 ```
 
@@ -434,7 +442,7 @@ const carByMake2: string[][] = [];
 3. We can get help with 'map', 'forEach', 'reduce' functions
 4. Flexible - arrays can still contain multiple different types
 
-```js
+```ts
 // 1) Help with inference when extracting values
 const car = carMakers[0];
 const myCar = carMakers.pop();
@@ -472,7 +480,7 @@ A tuple is an array where we put the values in a very specific order... It loses
 
 Here's an object representation of a drink.
 
-```js
+```ts
 const drink = {
   color: 'brown',
   carbonated: true,
@@ -482,28 +490,28 @@ const drink = {
 
 Without annotation TS infers it as an array with swappable values.
 
-```js
+```ts
 const pepsi = ['brown', true, 40];
 // Wrong inference: pepsi: (string | boolean | number)[]
 ```
 
 Annotation turns this into a tuple rather than array.
 
-```js
+```ts
 // Tuple
 const pepsi: [string, boolean, number] = ['brown', true, 40];
 ```
 
 To simplify we can also use a type alias. This eliminates having to annotate for each variable declaration.
 
-```js
+```ts
 // Type alias defining a tuple
 type Drink = [string, boolean, number];
 ```
 
 This creates a brand new type that we can use as a tuple. Now we can create many different drinks.
 
-```js
+```ts
 // Tuple instances
 const cola: Drink = ['brown', true, 40];
 const sprite: Drink = ['clear', true, 40];
@@ -512,7 +520,7 @@ const tea: Drink = ['brown', false, 0];
 
 Why use them? Perhaps when processing a CSV file to represent a single row...
 
-```js
+```ts
 // Here's a tuple
 const carSpecs: [number, number] = [400, 3354];
 
@@ -531,7 +539,7 @@ Interfaces - Creates a new type, describing the property names and value types o
 
 Here's an object literal that we will pass to a function.
 
-```js
+```ts
 // Object literal
 const oldCivic = {
   name: 'civic',
@@ -542,7 +550,7 @@ const oldCivic = {
 
 Annotating function arguments that are objects are unwieldy.
 
-```js
+```ts
 // Unwieldy and hard to read
 const printVehicle = (vehicle: {
   name: string;
@@ -565,7 +573,7 @@ This is not ideal bc we would have to annotate for each new function and it is u
 2. They begin with a capital letter.
 3. They use a generic term (Vehicle not Civic).
 
-```js
+```ts
 interface Vehicle {
   name: string;
   year: number;
@@ -584,7 +592,7 @@ printVehicle(oldCivic);
 
 Here's a more complex object where we use `Date` for `year` and a function for `summary`.
 
-```js
+```ts
 // complex object
 const oldDatsun = {
   name: 'datsun',
@@ -598,7 +606,7 @@ const oldDatsun = {
 
 We can use complex data types such as `Date` for `year` and can express a function for `summary` inside of our interface.
 
-```js
+```ts
 interface Vehicle {
   name: string;
   year: Date;
@@ -620,7 +628,7 @@ printVehicle(oldDatsun);
 
 Here's an example that only defines a single property for an interface.
 
-```js
+```ts
 interface Reportable {
   summary(): string;
 }
@@ -639,7 +647,7 @@ We also further abstract the interface name to `Reportable`, saying, "In order t
 
 Here is another object that also has a `summary()` property.
 
-```js
+```ts
 const drink = {
   color: 'brown',
   carbonated: true,
@@ -654,7 +662,7 @@ Since `drink` has a `summary` function that returns a string  just like `oldDats
 
 That means we can call `printSummary` on each of theses very different objects.
 
-```js
+```ts
 printSummary(oldDatsun);
 printSummary(drink2);
 ```
@@ -703,7 +711,7 @@ When we create classes we can add modifiers
 
 Fields - either we initialize a property on the same line...
 
-```js
+```ts
 class Vehicle {
   color: string = 'red'; // initialize property on same line
 }
@@ -711,7 +719,7 @@ class Vehicle {
 
 or we initialize in the constructor...
 
-```js
+```ts
 class Vehicle {
   color: string;
 
@@ -723,7 +731,7 @@ class Vehicle {
 
 Here's a shorthand for creating public fields that can be initialized in the constructor.
 
-```js
+```ts
 class Vehicle {
   constructor(public color: string) {}
 }
@@ -733,7 +741,7 @@ class Vehicle {
 
 Next we can add methods.
 
-```js
+```ts
 class Vehicle {
   constructor(public color: string) {}
 
@@ -745,7 +753,7 @@ class Vehicle {
 
 We don't actually call methods on the class directly. Usually we create an instance with the `new` keyword and call methods off of that object.
 
-```js
+```ts
 const vehicle = new Vehicle('orange');
 
 console.log(vehicle.color);
@@ -755,7 +763,7 @@ vehicle.honk();
 
 Next we create a `Car` class.
 
-```js
+```ts
 class Car extends Vehicle {
   constructor(public wheels: number, color: string) {
     super(color);
@@ -786,7 +794,7 @@ Without type guards, only the methods in common for the union would be usable.
 - Primitive types (number, string, boolean, symbol) uses `typeof`
 - Every other type uses `instanceof`
 
-```js
+```ts
 class Sorter {
     constructor(public collection: number[] | string) {}
   
@@ -828,7 +836,7 @@ Abstract classes cannot be instantiated directly but serve as a model from which
 
 They allow you to specify abstract properties and methods that must exist in the child class.
 
-```js
+```ts
 
 export abstract class Sorter {
   abstract length: number;
@@ -853,7 +861,7 @@ export abstract class Sorter {
 
 The `NumbersCollection` classes inherits from `Sorter`.
 
-```js
+```ts
 export class NumbersCollection extends Sorter {
   constructor(public data: number[]) {
     super();
@@ -878,7 +886,7 @@ export class NumbersCollection extends Sorter {
 
 The `CharactersCollection` also inherits from `Sorter`.
 
-```js
+```ts
 export class CharactersCollection extends Sorter {
   constructor(public data: string) {
     super();
@@ -912,7 +920,7 @@ Enum is an object that stores some closely related values.
 
 Use enum to signal to other developers that these are a set of closely related objects.
 
-```js
+```ts
 enum MatchResults {
   HomeWin = 'H',
   AwayWin = 'A',
@@ -932,7 +940,7 @@ Use whenever we have a small fixed set of values that are all closely related an
 
 Instead of creating hard-coded `addOne` and `addTwo` functions...
 
-```js
+```ts
 // Hard-code add
 const addOne = (a: number): number => {
   return a + 1;
@@ -945,7 +953,7 @@ const addTwo = (a: number): number => {
 
 We can create a dynamic `add` function by passing in a second argument.
 
-```js
+```ts
 // Dynamic add
 const add = (a: number, b: number): number => {
   return a + b;
@@ -960,7 +968,7 @@ In the same way we can create a function argument to create a dynamic `add` func
 
 Here is a class example...
 
-```js
+```ts
 class HoldNumber {
   data: number;
 }
@@ -982,7 +990,7 @@ So rather than defining separate classes we can just use a Generic.
 - A generic is going to customize the definition of this class in the exact same way that the `b` argument in the previous function customized the body of the function.
 - Instead we write a single class that does what both the previous classes were doing but it allows us to customize the types on the fly.
 
-```js
+```ts
 class HoldAnything<TypeOfData> {
   data: TypeOfData;
 }
@@ -994,7 +1002,7 @@ Now when we create an instance of `HoldAnything`, we can pass in an  argument fo
 
 Remember, when we call a function we have to pass in a value for each argument... In the same way, when we define a generic, we have to pass in a type for the generic value `TypeOfData`.
 
-```js
+```ts
 const holdNumber = new HoldAnything<number>();
 holdNumber.data = 123;
 
@@ -1009,7 +1017,7 @@ When we work with generics, view it exactly like we are working with a function 
 
 By convention, rather than giving a generic a long name such as `<TypeOfData>` we use a single letter like `<T>` which refers to a generic type:
 
-```js
+```ts
 class HoldAnything<T> {
   data: T;
 
@@ -1021,7 +1029,7 @@ class HoldAnything<T> {
 
 Here is a full example that uses an abstract class and generics.
 
-```js
+```ts
 export abstract class CsvFileReader<T> {
   data: T[] = [];
 
@@ -1060,7 +1068,7 @@ In composition we can give an object a reference to another object in order to c
 
 ### Composition Example
 
-```js
+```ts
 // Summary.ts
 export type MatchDataTuple = [
   Date,
@@ -1089,7 +1097,7 @@ export class Summary {
 // new Summary(new WinsAnalysis(), new ConsoleReport());
 ```
 
-```js
+```ts
 // WinsAnalysis.ts
 import { Analyzer } from '../Summary';
 import { MatchDataTuple } from '../Summary';
@@ -1114,7 +1122,7 @@ export class WinsAnalysis implements Analyzer {
 }
 ```
 
-```js
+```ts
 // ConsoleReport.ts
 import { OutputTarget } from '../Summary';
 
@@ -1125,7 +1133,7 @@ export class ConsoleReport implements OutputTarget {
 }
 ```
 
-```js
+```ts
 // index.ts
 import { MatchReader } from './MatchReader';
 import { CsvFileReader } from './CsvFileReader';
@@ -1153,7 +1161,7 @@ summary.buildAndPrintReport(matchReader.matches);
 
 ### Example of generics with classes
 
-```js
+```ts
 // Hard coded classes
 class ArrayOfNumbers {
   constructor(public collection: number[]) { }
@@ -1174,7 +1182,7 @@ class ArrayOfStrings {
 
 Instead of creating separate classes we can create a single class with a generic.
 
-```js
+```ts
 // Dynamic class
 class ArrayOfAnything<T> {
   constructor(public collection: T[]) { }
@@ -1196,7 +1204,7 @@ We still should make a point of explicitly setting type definitions in order to 
 
 ### Example of generics with functions
 
-```js
+```ts
 // hard-coded functions
 function printString(arr: string[]): void {
   for (let i = 0; i < arr.length; i++) {
@@ -1213,7 +1221,7 @@ function printNumbers(arr: number[]): void {
 
 Instead we create one new function that can receive any type of array
 
-```js
+```ts
 function printAnything<T>(arr: T[]): void {
   for (let i = 0; i < arr.length; i++) {
     console.log('arr[i]', arr[i])
@@ -1228,7 +1236,7 @@ printAnything<string>(['a', 'b', 'c']);
 
 We could also leave off the generic type and rely on type inference
 
-```js
+```ts
 //  type inference would resolve this as:
 //  printAnything<string>(arr: string[]): void
 printAnything(['a', 'b', 'c']);
@@ -1236,13 +1244,13 @@ printAnything(['a', 'b', 'c']);
 
 Instead, it is recommended to always use explicit type definitions in order to catch errors like this...
 
-```js
+```ts
 printAnything<string>([1, 2, 3]); // type number not assignable to type string
 ```
 
 ### Generic Constraints
 
-```js
+```ts
 class Car {
   print() {
     console.log('I am a car');
@@ -1265,7 +1273,7 @@ function printHousesOrCars<T>(arr: T[]): void {
 
 The fix involves creating an interface that we can use to extend the generic with.
 
-```js
+```ts
 // Fix
 interface Printable {
   print(): void;
@@ -1285,9 +1293,326 @@ printHousesOrCars<Car>([new Car(), new Car()]); // Good
 printHousesOrCars<House | Car>([new House(), new Car()]); // Good
 ```
 
+## XV. Decorators
+
+Decorators are functions that can be used to modify/change different properties/methods inside a class as well as static methods and properties, accessors, or the class itself.
+
+- Not the same as JavaScript Decorators
+- Used inside/on classes only
+- Experimental
+
+The key to understanding them decorators is understanding the order in which decorators work.
+
+```ts
+// decorators.ts
+class Boat {
+  color: string = 'red';
+
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`
+  }
+
+  @testDecorator
+  pilot(): void {
+    console.log('swish');
+  }
+}
+
+function testDecorator(target: any, key: string): void {
+  console.log('Target:', target);
+  console.log('Key:', key)
+}
+```
+
+```bash
+$ ts-node decorators.ts
+Target: Boat { formattedColor: [Getter], pilot: [Function] }
+Key: pilot
+```
+
+### Decorators on a property, method, or accessor
+
+Here's the breakdown of arguments:
+
+- First arg - is the **prototype** of the object
+- Second arg - is the key of the prop/method/accessor on the object
+- Third arg - is the property descriptor (more on this below)
+
+Decorators are applied when the code for the class is run... **(not when an instance is created)**
+
+Once again, **a decorator only gets executed one single time, when we define the class**.
+
+### Property descriptor
+
+The third argument is a property descriptor which is:
+
+- **an object that has some configuration options around a property defined on an object**
+
+It is not a part of Typescript but actually is a part of ES5 JavaScript.
+
+A property descriptor is essentially an object that is meant to configure a property on another object.
+
+#### Property Descriptor for Methods
+
+| Flag | Description |
+| --- | --- |
+| writable | Whether or not this property can be changed |
+| enumerable | Whether or not this property get looped over by a 'for...in' |
+| value | current value |
+| configurable | Property definition can be changed and property can be deleted |
+
+```js
+> // Chrome Console
+> const car = { make: 'honda', year: 2000 }
+> Object.getOwnPropertyDescriptor(car, 'make')
+> -{
+    configurable: true
+    enumerable: true
+    value: "honda"
+    writable: true
+  }
+> Object.defineProperty(car, 'make', { writable: false });
+> -{make: "honda", year: 2000}
+> car
+> -{make: "honda", year: 2000}
+> car.make = 'chevy'
+> "chevy"
+> car
+> -{make: "honda", year: 2000}
+```
+
+Now we can update our Boat class to catch errors.
+
+```ts
+class Boat {
+  color: string = 'red';
+
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`
+  }
+
+  @logError
+  pilot(): void {
+    throw new Error();
+    console.log('swish');
+  }
+}
+
+function logError(target: any, key: string, desc: PropertyDescriptor): void {
+  const method = desc.value;
+
+  desc.value = function () {
+    try {
+      method();
+    } catch (e) {
+      console.log('Oops, boat was sunk');
+    }
+  }
+}
+
+new Boat().pilot();
+```
+
+Console result.
+
+```bash
+$ ts-node decorators.ts
+Oops, boat was sunk
+```
+
+### Decorator Factory
+
+A decorator factory is a normal function that takes an argument and returns a decorator function.
+
+This allows us to pass an argument to the decorator and have the decorator function use that argument.
+
+```ts
+class Boat {
+  color: string = 'red';
+
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`
+  }
+
+  @logError("Oops, boat sunk in the ocean")
+  pilot(): void {
+    throw new Error();
+    console.log('swish');
+  }
+}
+
+function logError(errorMessage: string) {
+  return function (target: any, key: string, desc: PropertyDescriptor): void {
+    const method = desc.value;
+
+    desc.value = function () {
+      try {
+        method();
+      } catch (e) {
+        console.log(errorMessage);
+      }
+    }
+  }
+}
+
+new Boat().pilot();
+```
+
+Console result.
+
+```text
+$ ts-node decorators.ts
+Oops, boat was sunk in the ocean
+```
+
+This decorator factory pattern is used often in order to allow flexibility with decorators.
+
+### Decorators around Properties
+
+Properties are not exposed thru the target argument of the decorator because target refers to the prototype.
+
+Prototypes contain the methods but not the properties
+
+```ts
+class Boat {
+  @testDecorator
+  color: string = 'red';
+
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`
+  }
+
+  pilot(): void {
+    throw new Error();
+    console.log('swish');
+  }
+}
+
+function testDecorator(target: any, key: string) {
+  console.log('key', key);
+  console.log(target[key]);
+  console.log(target.color);
+}
+```
+
+Trying to get a property value of an instance will never work with decorators since decorators run when the class is interpreted.
+
+This is a huge limitation of decorators. We can only use them to get methods (built on the prototype) or verify property names.
+
+```bash
+$ ts-node decorators.ts
+color
+undefined
+undefined
+```
+
+Setting the decorator on an accessor works as well but also does not provide property values.
+
+```ts
+class Boat {
+  color: string = 'red';
+
+  @testDecorator
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`
+  }
+
+  pilot(): void {
+    throw new Error();
+    console.log('swish');
+  }
+}
+
+function testDecorator(target: any, key: string) {
+  console.log(key);
+  console.log(target[key]);
+  console.log(target.color);
+}
+```
+
+```text
+$ ts-node decorators.ts
+formattedColor
+This boat's color is undefined
+undefined
+```
+
+### Parameter Decorators
+
+Parameter decorators can be used on the arguments (parameters) of a function.
+
+They take three arguments:
+
+- `target`: any
+- `key`: string
+- `index`: number
+
+See `parameterDecorator` function below.
+
+```ts
+class Boat {
+  @testDecorator
+  color: string = 'red';
+
+  @testDecorator
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`
+  }
+
+  pilot(
+    @parameterDecorator speed: string,
+    @parameterDecorator generateWake: boolean
+  ): void {
+    if (speed === 'fast') {
+      console.log('swish');
+    } else {
+      console.log('nothing')
+    }
+  }
+}
+
+function parameterDecorator(target: any, key: string, index: number) {
+  console.log(key, index)
+}
+
+function testDecorator(target: any, key: string) {
+  console.log(key);
+}
+```
+
+```text
+$ ts-node decorators.ts
+color
+formattedColor
+pilot 1
+pilot 0
+```
+
+### Class Decorator
+
+Lastly, we can create a decorator on a class. The function takes one argument- `constructor`.
+
+```ts
+@classDecorator
+class Boat {
+  @testDecorator
+  color: string = 'red';
+}
+
+function classDecorator(constructor: Function) {
+  console.log(constructor);
+}
+```
+
+```text
+$ ts-node decorators.ts
+color
+[Function: Boat]
+```
+
 ## Appendix
 
-### a) Fix TypeError undefined for getter & setter (ambiguous `this`)
+### A. Fix TypeError undefined for getter & setter (ambiguous `this`)
 
 If a getter or setter is used as a pass-through method then `this` on the destination method will refer to the pass through object and not the destination object.
 
@@ -1295,7 +1620,7 @@ If a getter or setter is used as a pass-through method then `this` on the destin
 
 `this` refers to whatever is to the left of the method call.
 
-```js
+```ts
 // Reminder on how 'this' works in javascript
 const colors = {
   color: 'red',
@@ -1315,7 +1640,7 @@ printColor(); // TypeError: Cannot read property 'color' of undefined
 
 The destination object must use an arrow function for its getters and setters.
 
-```js
+```ts
 // normal getter/setter shorthand will not work with pass-through
  export class Attributes<T> {
   constructor(private data: T) {}
@@ -1333,7 +1658,7 @@ The destination object must use an arrow function for its getters and setters.
 
 The fix uses an arrow function.
 
-```js
+```ts
 // put equal after get/set and an arrow before brackets
 export class Attributes<T> {
   constructor(private data: T) {}
@@ -1351,11 +1676,11 @@ export class Attributes<T> {
 
 In fact, we should ALWAYS use arrow functions 100% of the time with getters and setters so that we never have an ambiguous `this`.
 
-### b) How to extend a type definition
+### B. How to extend a type definition
 
 This can be done to extend poorly typed defs.
 
-```js
+```ts
 import { Router, Request, Response } from 'express';
 
 interface RequestWithBody extends Request {
@@ -1377,11 +1702,11 @@ router.post('/login', (req: RequestWithBody, res: Response) => {
 });
 ```
 
-### c) How to add a type guard
+### C. How to add a type guard
 
 This is necessary to avoid "Object is possibly undefined".
 
-```js
+```ts
 // Replace this
 router.get('/', (req: Request, res: Response) => {
   if (req.session.loggedIn) {
