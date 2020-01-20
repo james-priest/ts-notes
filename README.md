@@ -1334,9 +1334,9 @@ Key: pilot
 
 Here's the breakdown of arguments:
 
-- First arg - is the **prototype** of the object
-- Second arg - is the key of the prop/method/accessor on the object
-- Third arg - is the property descriptor (more on this below)
+- **First arg** - is the **prototype** of the object
+- **Second arg** - is the **key** of the prop/method/accessor on the object
+- **Third arg** - is the **property descriptor** (more on this below)
 
 Decorators are applied when the code for the class is run... **(not when an instance is created)**
 
