@@ -47,6 +47,7 @@ These are notes from Udemy course [Typescript: The Complete Developer's Guide 20
     - [Decorators around Properties](#decorators-around-properties)
     - [Parameter Decorators](#parameter-decorators)
     - [Class Decorator](#class-decorator)
+  - [XVI. Metadata](#xvi-metadata)
   - [Appendix](#appendix)
     - [A. Fix TypeError undefined for getter &amp; setter (ambiguous this)](#a-fix-typeerror-undefined-for-getter-amp-setter-ambiguous-this)
       - [Reminder of this](#reminder-of-this)
@@ -817,7 +818,7 @@ class Sorter {
           // Only going to work if collection is a string
           // If collection is a string
           if (typeof this.collection === 'string') { //type guard
-            
+
           }
         }
       }
@@ -1164,18 +1165,18 @@ summary.buildAndPrintReport(matchReader.matches);
 ```ts
 // Hard coded classes
 class ArrayOfNumbers {
-  constructor(public collection: number[]) { }
+  constructor(public collection: number[]) {}
   
   get(index: number): number {
-    return this.collection[index]
+    return this.collection[index];
   }
 }
 
 class ArrayOfStrings {
-  constructor(public collection: string[]) { }
+  constructor(public collection: string[]) {}
   
   get(index: number): string {
-    return this.collection[index]
+    return this.collection[index];
   }
 }
 ```
@@ -1185,14 +1186,14 @@ Instead of creating separate classes we can create a single class with a generic
 ```ts
 // Dynamic class
 class ArrayOfAnything<T> {
-  constructor(public collection: T[]) { }
+  constructor(public collection: T[]) {}
   
   get(index: number): T {
     return this.collection[index];
   }
 }
 
-// type inference around generics shows... 
+// type inference around generics shows...
 //   arr: ArrayOfAnything<string>
 const arr = new ArrayOfAnything(['a', 'b', 'c']);
 
@@ -1208,13 +1209,13 @@ We still should make a point of explicitly setting type definitions in order to 
 // hard-coded functions
 function printString(arr: string[]): void {
   for (let i = 0; i < arr.length; i++) {
-    console.log('arr[i]', arr[i])
+    console.log('arr[i]', arr[i]);
   }
 }
 
 function printNumbers(arr: number[]): void {
   for (let i = 0; i < arr.length; i++) {
-    console.log('arr[i]', arr[i])
+    console.log('arr[i]', arr[i]);
   }
 }
 ```
@@ -1224,7 +1225,7 @@ Instead we create one new function that can receive any type of array
 ```ts
 function printAnything<T>(arr: T[]): void {
   for (let i = 0; i < arr.length; i++) {
-    console.log('arr[i]', arr[i])
+    console.log('arr[i]', arr[i]);
   }
 }
 
@@ -1252,13 +1253,13 @@ printAnything<string>([1, 2, 3]); // type number not assignable to type string
 
 ```ts
 class Car {
-  print() {
+  print(): void {
     console.log('I am a car');
   }
 }
 
 class House {
-  print() {
+  print(): void {
     console.log('I am a house')
   }
 }
@@ -1305,22 +1306,22 @@ The key to understanding them decorators is understanding the order in which dec
 
 ```ts
 // decorators.ts
+function testDecorator(target: any, key: string): void {
+  console.log('Target:', target);
+  console.log('Key:', key)
+}
+
 class Boat {
-  color: string = 'red';
+  color = 'red';
 
   get formattedColor(): string {
-    return `This boat's color is ${this.color}`
+    return `This boat's color is ${this.color}`;
   }
 
   @testDecorator
   pilot(): void {
     console.log('swish');
   }
-}
-
-function testDecorator(target: any, key: string): void {
-  console.log('Target:', target);
-  console.log('Key:', key)
 }
 ```
 
@@ -1384,20 +1385,6 @@ A property descriptor is essentially an object that is meant to configure a prop
 Now we can update our Boat class to catch errors.
 
 ```ts
-class Boat {
-  color: string = 'red';
-
-  get formattedColor(): string {
-    return `This boat's color is ${this.color}`
-  }
-
-  @logError
-  pilot(): void {
-    throw new Error();
-    console.log('swish');
-  }
-}
-
 function logError(target: any, key: string, desc: PropertyDescriptor): void {
   const method = desc.value;
 
@@ -1407,6 +1394,20 @@ function logError(target: any, key: string, desc: PropertyDescriptor): void {
     } catch (e) {
       console.log('Oops, boat was sunk');
     }
+  }
+}
+
+class Boat {
+  color = 'red';
+
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`;
+  }
+
+  @logError
+  pilot(): void {
+    throw new Error();
+    console.log('swish');
   }
 }
 
@@ -1427,20 +1428,7 @@ A decorator factory is a normal function that takes an argument and returns a de
 This allows us to pass an argument to the decorator and have the decorator function use that argument.
 
 ```ts
-class Boat {
-  color: string = 'red';
-
-  get formattedColor(): string {
-    return `This boat's color is ${this.color}`
-  }
-
-  @logError("Oops, boat sunk in the ocean")
-  pilot(): void {
-    throw new Error();
-    console.log('swish');
-  }
-}
-
+// decorator factory
 function logError(errorMessage: string) {
   return function (target: any, key: string, desc: PropertyDescriptor): void {
     const method = desc.value;
@@ -1452,6 +1440,20 @@ function logError(errorMessage: string) {
         console.log(errorMessage);
       }
     }
+  }
+}
+
+class Boat {
+  color = 'red';
+
+  get formattedColor(): string {
+    return `This boat's color is ${this.color}`;
+  }
+
+  @logError("Oops, boat sunk in the ocean")
+  pilot(): void {
+    throw new Error();
+    console.log('swish');
   }
 }
 
@@ -1469,29 +1471,30 @@ This decorator factory pattern is used often in order to allow flexibility with 
 
 ### Decorators around Properties
 
-Properties are not exposed thru the target argument of the decorator because target refers to the prototype.
+**Properties are not exposed thru the target argument of the decorator because target refers to the prototype.**
 
-Prototypes contain the methods but not the properties
+Prototypes contain the methods but not the properties.
 
 ```ts
+// method/property decorator
+function testDecorator(target: any, key: string) {
+  console.log('key', key);
+  console.log(target[key]);
+  console.log(target.color);
+}
+
 class Boat {
   @testDecorator
-  color: string = 'red';
+  color = 'red';
 
   get formattedColor(): string {
-    return `This boat's color is ${this.color}`
+    return `This boat's color is ${this.color}`;
   }
 
   pilot(): void {
     throw new Error();
     console.log('swish');
   }
-}
-
-function testDecorator(target: any, key: string) {
-  console.log('key', key);
-  console.log(target[key]);
-  console.log(target.color);
 }
 ```
 
@@ -1509,12 +1512,19 @@ undefined
 Setting the decorator on an accessor works as well but also does not provide property values.
 
 ```ts
+// accessor decorator
+function testDecorator(target: any, key: string) {
+  console.log(key);
+  console.log(target[key]);
+  console.log(target.color);
+}
+
 class Boat {
-  color: string = 'red';
+  color = 'red';
 
   @testDecorator
   get formattedColor(): string {
-    return `This boat's color is ${this.color}`
+    return `This boat's color is ${this.color}`;
   }
 
   pilot(): void {
@@ -1523,11 +1533,6 @@ class Boat {
   }
 }
 
-function testDecorator(target: any, key: string) {
-  console.log(key);
-  console.log(target[key]);
-  console.log(target.color);
-}
 ```
 
 ```text
@@ -1550,13 +1555,21 @@ They take three arguments:
 See `parameterDecorator` function below.
 
 ```ts
+function parameterDecorator(target: any, key: string, index: number): void {
+  console.log(key, index);
+}
+
+function testDecorator(target: any, key: string): void {
+  console.log(key);
+}
+
 class Boat {
   @testDecorator
-  color: string = 'red';
+  color = 'red';
 
   @testDecorator
   get formattedColor(): string {
-    return `This boat's color is ${this.color}`
+    return `This boat's color is ${this.color}`;
   }
 
   pilot(
@@ -1566,17 +1579,9 @@ class Boat {
     if (speed === 'fast') {
       console.log('swish');
     } else {
-      console.log('nothing')
+      console.log('nothing');
     }
   }
-}
-
-function parameterDecorator(target: any, key: string, index: number) {
-  console.log(key, index)
-}
-
-function testDecorator(target: any, key: string) {
-  console.log(key);
 }
 ```
 
@@ -1593,14 +1598,14 @@ pilot 0
 Lastly, we can create a decorator on a class. The function takes one argument- `constructor`.
 
 ```ts
+function classDecorator(constructor: Function): void {
+  console.log(constructor);
+}
+
 @classDecorator
 class Boat {
   @testDecorator
-  color: string = 'red';
-}
-
-function classDecorator(constructor: Function) {
-  console.log(constructor);
+  color = 'red';
 }
 ```
 
@@ -1609,6 +1614,8 @@ $ ts-node decorators.ts
 color
 [Function: Boat]
 ```
+
+## XVI. Metadata
 
 ## Appendix
 
