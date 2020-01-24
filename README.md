@@ -1617,6 +1617,104 @@ color
 
 ## XVI. Metadata
 
+Import 'reflect-metadata' automatically add a variable to global scope.
+
+```ts
+import 'reflect-metadata';
+
+Reflect.[some method]
+```
+
+Metadata is like some secret information which doesn't show up anywhere except through the use of the reflect-metadata package.
+
+```ts
+import 'reflect-metadata';
+
+const plane = {
+  color: 'red'
+};
+
+Reflect.defineMetadata('note', 'hi there', plane);
+Reflect.defineMetadata('height', 20, plane);
+Reflect.defineMetadata('colorNote', 'hi again', plane, 'color');
+
+const note = Reflect.getMetadata('note', plane);
+const height = Reflect.getMetadata('height', plane);
+const colorNote = Reflect.getMetadata('colorNote', plane, 'color');
+
+console.log(note);
+console.log(height);
+console.log(colorNote);
+```
+
+```text
+$ ts-node metadata.ts
+hi there
+20
+hi again
+```
+
+Metadata allows us to attach information to an object as well as a property.
+
+Here's an example of tying information to a method.
+
+```ts
+import 'reflect-metadata';
+
+function markFunction(target: Plane, key: string): void {
+  Reflect.defineMetadata('secret', 123, target, key);
+}
+
+class Plane {
+  color = 'red';
+
+  @markFunction
+  fly(): void {
+    console.log('vrrrr');
+  }
+}
+
+const secret = Reflect.getMetadata('secret', Plane.prototype, 'fly');
+console.log(secret);
+```
+
+```text
+$ ts-node metadata.ts
+123
+```
+
+If we want to pass in a string then it is done like this.
+
+```ts
+import 'reflect-metadata';
+
+// decorator factory
+function markFunction(secretInfo: string) {
+  return function(target: Plane, key: string): void {
+    Reflect.defineMetadata('secret', secretInfo, target, key);
+  };
+}
+
+class Plane {
+  color = 'red';
+
+  @markFunction('passing metadata param')
+  fly(): void {
+    console.log('vrrrr');
+  }
+}
+
+const secret = Reflect.getMetadata('secret', Plane.prototype, 'fly');
+console.log(secret);
+
+```
+
+```text
+$ ts-node metadata.ts
+passing metadata param
+```
+
+
 ## Appendix
 
 ### A. Fix TypeError undefined for getter & setter (ambiguous `this`)
